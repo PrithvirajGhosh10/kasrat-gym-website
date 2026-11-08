@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "KASRAT | Naihati",
   description:
-    "Train hard. Stay disciplined. Become stronger at KASRAT Fitness Club.",
+    "Train hard. Stay disciplined. Become stronger at KASRAT.",
 };
 
 export default function RootLayout({

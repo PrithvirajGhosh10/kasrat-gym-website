@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import ActiveMemberCount from "@/components/ActiveMemberCount";
 
 const programs = [
   {
@@ -63,18 +64,48 @@ export default function Home() {
               </a>
             </div>
 
+            {/* HERO STATISTICS */}
             <div className="hero-stats">
               <div>
                 <strong>04</strong>
                 <span>Training zones</span>
               </div>
-              <div>
-                <strong>01</strong>
-                <span>Stronger you</span>
-              </div>
+
+              <ActiveMemberCount />
+
               <div>
                 <strong>100%</strong>
                 <span>Your commitment</span>
+              </div>
+            </div>
+
+            {/* LOGIN SECTION */}
+            <div className="mt-8">
+              <p className="eyebrow">
+                KASRAT PORTAL ACCESS
+              </p>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href="/login"
+                  className="button button-outline"
+                >
+                  Owner Login ↗
+                </Link>
+
+                <Link
+                  href="/login"
+                  className="button button-outline"
+                >
+                  Staff Login ↗
+                </Link>
+
+                <Link
+                  href="/member/login"
+                  className="button button-gold"
+                >
+                  Member Login ↗
+                </Link>
               </div>
             </div>
           </div>
@@ -91,9 +122,11 @@ export default function Home() {
       <section className="section container" id="programs">
         <div className="section-heading">
           <p className="eyebrow">TRAIN YOUR WAY</p>
+
           <h2>
             OUR <span>PROGRAMS</span>
           </h2>
+
           <p>
             One place. Multiple ways to become stronger.
           </p>
@@ -117,6 +150,7 @@ export default function Home() {
               <div className="program-content">
                 <h3>{program.title}</h3>
                 <p>{program.description}</p>
+
                 <Link href="/contact">
                   Enquire Now ↗
                 </Link>
@@ -185,13 +219,16 @@ export default function Home() {
       <section className="section container home-bottom">
         <div>
           <p className="eyebrow">MEET THE TEAM</p>
+
           <h2>
             LEARN FROM THE <span>BEST.</span>
           </h2>
+
           <p>
             Get guidance, motivation and support from
             our training team.
           </p>
+
           <Link href="/trainers" className="simple-link">
             Meet Our Trainers ↗
           </Link>
@@ -199,12 +236,15 @@ export default function Home() {
 
         <div>
           <p className="eyebrow">INSIDE KASRAT</p>
+
           <h2>
             TAKE A <span>LOOK.</span>
           </h2>
+
           <p>
             Explore the spaces where your progress takes shape.
           </p>
+
           <Link href="/gallery" className="simple-link">
             Explore Gallery ↗
           </Link>

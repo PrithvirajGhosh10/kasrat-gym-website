@@ -10,55 +10,115 @@ const links = [
   { label: "About Us", href: "/#about" },
   { label: "Programs", href: "/#programs" },
   { label: "Trainers", href: "/trainers" },
-  { label: "Membership", href: "/#membership" },
   { label: "Gallery", href: "/gallery" },
-  { label: "Get in Touch", href: "/contact" },
+];
+
+const loginLinks = [
+  { label: "Owner Login", href: "/login" },
+  { label: "Staff Login", href: "/login" },
+  { label: "Member Login", href: "/member/login" },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+
   const pathname = usePathname();
 
   return (
     <header className="site-header">
       <div className="nav-wrap container">
-        <Link href="/" className="brand" onClick={() => setOpen(false)}>
+
+        {/* BRAND */}
+        <Link
+          href="/"
+          className="brand"
+          onClick={() => {
+            setOpen(false);
+            setLoginOpen(false);
+          }}
+        >
           <span className="brand-mark">K</span>
+
           <span className="brand-copy">
-         <strong>KASRAT</strong>
-        <small>Naihati</small>
-        </span>
+            <strong>KASRAT</strong>
+            <small>Naihati</small>
+          </span>
         </Link>
 
+        {/* MOBILE MENU */}
         <button
           className="menu-toggle"
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            setOpen(!open);
+            setLoginOpen(false);
+          }}
           aria-label="Toggle navigation"
+          aria-expanded={open}
+          type="button"
         >
           <span />
           <span />
           <span />
         </button>
 
+        {/* NAVIGATION */}
         <nav className={open ? "nav-links open" : "nav-links"}>
+
           {links.map((link) => (
             <Link
               key={link.label}
               href={link.href}
               className={pathname === link.href ? "active" : ""}
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                setLoginOpen(false);
+              }}
             >
               {link.label}
             </Link>
           ))}
 
-          <Link
-            href="/contact"
-            className="nav-cta"
-            onClick={() => setOpen(false)}
-          >
-            Join Now ↗
-          </Link>
+          {/* LOGIN BUTTON AND DROPDOWN */}
+          <div className="login-dropdown">
+            <button
+              type="button"
+              className="login-dropdown-toggle"
+              onClick={() => setLoginOpen(!loginOpen)}
+              aria-expanded={loginOpen}
+            >
+              <span>Login</span>
+
+              <span
+                className={
+                  loginOpen
+                    ? "login-arrow rotated"
+                    : "login-arrow"
+                }
+              >
+                ▾
+              </span>
+            </button>
+
+            {loginOpen && (
+              <div className="login-dropdown-menu">
+                {loginLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => {
+                      setOpen(false);
+                      setLoginOpen(false);
+                    }}
+                  >
+                    {link.label}
+                    <span>↗</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
         </nav>
       </div>
     </header>
