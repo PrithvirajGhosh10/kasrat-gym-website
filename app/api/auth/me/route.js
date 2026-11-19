@@ -1,11 +1,14 @@
 
 import { NextResponse } from "next/server";
+import { connection } from "next/server";
 
 import { connectDB } from "@/lib/mongodb";
 import { getSession } from "@/lib/auth";
 import Admin from "@/models/Admin";
 
 export async function GET() {
+  await connection();
+
   try {
     const session = await getSession();
 

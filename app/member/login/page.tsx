@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function MemberLoginPage() {
   const router = useRouter();
@@ -12,6 +13,12 @@ export default function MemberLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const [year, setYear] = useState("2026");
+
+  useEffect(() => {
+    setYear(String(new Date().getFullYear()));
+  }, []);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,7 +59,6 @@ export default function MemberLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-8">
       <div className="w-full max-w-md">
-
         {/* Login Card */}
         <div className="rounded-2xl bg-white p-7 shadow-lg sm:p-9">
 
@@ -138,7 +144,10 @@ export default function MemberLoginPage() {
 
             {/* Error */}
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              <div
+                role="alert"
+                className="rounded-lg bg-red-50 p-3 text-sm text-red-600"
+              >
                 {error}
               </div>
             )}
@@ -156,18 +165,28 @@ export default function MemberLoginPage() {
           {/* Help Text */}
           <div className="mt-7 rounded-lg bg-gray-50 p-4">
             <p className="text-center text-xs leading-5 text-gray-500">
-              Use the phone number and password provided during your gym registration.
-              If you cannot log in, please contact the gym owner.
+              Use the phone number and password provided during your gym
+              registration. If you cannot log in, please contact the gym owner.
             </p>
           </div>
+
+          {/* Sign Up Link */}
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link
+              href="/member/signup"
+              className="font-semibold text-gray-900 underline hover:text-gray-600"
+            >
+              Sign Up
+            </Link>
+          </p>
 
         </div>
 
         {/* Footer */}
         <p className="mt-6 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} KASRAT Fitness Club. All rights reserved.
+          © {year} KASRAT Fitness Club. All rights reserved.
         </p>
-
       </div>
     </main>
   );

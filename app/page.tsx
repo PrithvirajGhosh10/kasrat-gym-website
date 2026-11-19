@@ -50,25 +50,26 @@ export default function Home() {
             </h1>
 
             <p className="hero-description">
-              Train hard. Stay disciplined.
-              Achieve more at KASRAT.
+              Your fitness journey starts here.
+              Train hard, stay disciplined and become
+              a stronger version of yourself at KASRAT.
             </p>
 
             <div className="hero-actions">
               <Link href="/contact" className="button button-gold">
-                Join Now ↗
+                Join KASRAT ↗
               </Link>
 
-              <a href="#programs" className="text-link">
-                Explore Programs ↓
-              </a>
+              <Link href="/programs" className="button button-outline">
+                Explore Programs →
+              </Link>
             </div>
 
             {/* HERO STATISTICS */}
             <div className="hero-stats">
               <div>
                 <strong>04</strong>
-                <span>Training zones</span>
+                <span>Training programs</span>
               </div>
 
               <ActiveMemberCount />
@@ -78,39 +79,13 @@ export default function Home() {
                 <span>Your commitment</span>
               </div>
             </div>
-
-            {/* LOGIN SECTION */}
-            <div className="mt-8">
-              <p className="eyebrow">
-                KASRAT PORTAL ACCESS
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  href="/login"
-                  className="button button-outline"
-                >
-                  Owner Login ↗
-                </Link>
-
-                <Link
-                  href="/login"
-                  className="button button-outline"
-                >
-                  Staff Login ↗
-                </Link>
-
-                <Link
-                  href="/member/login"
-                  className="button button-gold"
-                >
-                  Member Login ↗
-                </Link>
-              </div>
-            </div>
           </div>
 
-          <div className="hero-photo">
+          <div
+            className="hero-photo"
+            role="img"
+            aria-label="Gym strength training"
+          >
             <div className="photo-label">
               DISCIPLINE IS THE DIFFERENCE
             </div>
@@ -128,7 +103,8 @@ export default function Home() {
           </h2>
 
           <p>
-            One place. Multiple ways to become stronger.
+            Discover different ways to train, improve and
+            achieve your fitness goals.
           </p>
         </div>
 
@@ -143,12 +119,15 @@ export default function Home() {
                 style={{
                   backgroundImage: `url("${program.image}")`,
                 }}
+                role="img"
+                aria-label={program.title}
               >
                 <span>{program.number}</span>
               </div>
 
               <div className="program-content">
                 <h3>{program.title}</h3>
+
                 <p>{program.description}</p>
 
                 <Link href="/contact">
@@ -157,6 +136,13 @@ export default function Home() {
               </div>
             </article>
           ))}
+        </div>
+
+        {/* EXPLORE PROGRAMS BUTTON */}
+        <div className="home-section-actions">
+          <Link href="/programs" className="button button-gold">
+            Explore Programs →
+          </Link>
         </div>
       </section>
 
@@ -176,19 +162,34 @@ export default function Home() {
               At KASRAT, we believe fitness is about more
               than physical strength. It is about building
               confidence, discipline and a healthier
-              lifestyle. Find your training style and make
-              every session count.
+              lifestyle.
+
+              Find your training style, challenge yourself
+              and make every session count.
             </p>
 
-            <Link
-              href="/contact"
-              className="button button-outline"
-            >
-              Know More ↗
-            </Link>
+            <div className="home-about-actions">
+              <Link
+                href="/about"
+                className="button button-gold"
+              >
+                About Us →
+              </Link>
+
+              <Link
+                href="/contact"
+                className="button button-outline"
+              >
+                Visit KASRAT ↗
+              </Link>
+            </div>
           </div>
 
-          <div className="about-photo" />
+          <div
+            className="about-photo"
+            role="img"
+            aria-label="Gym training environment"
+          />
         </div>
       </section>
 
@@ -201,52 +202,84 @@ export default function Home() {
             </p>
 
             <h2>
-              CHOOSE YOUR <span>PLAN.</span>
+              READY TO <span>GET STRONGER?</span>
             </h2>
 
             <p>
-              Flexible membership options for every fitness goal.
+              Take the first step towards a healthier
+              and more active lifestyle.
             </p>
           </div>
 
           <Link href="/contact" className="button button-gold">
-            View Membership ↗
+            Membership Enquiry ↗
           </Link>
         </div>
       </section>
 
-      {/* TRAINERS AND GALLERY LINKS */}
+      {/* TRAINERS AND GALLERY */}
       <section className="section container home-bottom">
+        {/* TRAINERS */}
         <div>
           <p className="eyebrow">MEET THE TEAM</p>
 
           <h2>
-            LEARN FROM THE <span>BEST.</span>
+            TRAIN WITH <span>CONFIDENCE.</span>
           </h2>
 
           <p>
-            Get guidance, motivation and support from
-            our training team.
+            Get guidance, motivation and support
+            throughout your fitness journey.
           </p>
 
-          <Link href="/trainers" className="simple-link">
+          <Link
+            href="/trainers"
+            className="button button-gold home-action-button"
+          >
             Meet Our Trainers ↗
           </Link>
         </div>
 
+        {/* GALLERY */}
         <div>
           <p className="eyebrow">INSIDE KASRAT</p>
 
           <h2>
-            TAKE A <span>LOOK.</span>
+            EXPLORE OUR <span>GYM.</span>
           </h2>
 
           <p>
-            Explore the spaces where your progress takes shape.
+            Take a look at the training environment
+            and facilities at KASRAT.
           </p>
 
-          <Link href="/gallery" className="simple-link">
+          <Link
+            href="/gallery"
+            className="button button-gold home-action-button"
+          >
             Explore Gallery ↗
+          </Link>
+        </div>
+      </section>
+
+      {/* CONTACT CTA */}
+      <section className="section container">
+        <div className="membership-panel">
+          <div>
+            <p className="eyebrow">WE ARE HERE FOR YOU</p>
+
+            <h2>
+              START YOUR <span>JOURNEY.</span>
+            </h2>
+
+            <p>
+              Have questions? Visit us at KASRAT,
+              Naihati. We'd love to meet you.
+            </p>
+          </div>
+
+          <Link href="/contact" className="button button-gold">
+            Contact Us ↗
           </Link>
         </div>
       </section>

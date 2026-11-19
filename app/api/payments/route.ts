@@ -8,6 +8,34 @@ import Member from "@/models/Member";
 import Payment from "@/models/Payment";
 import type { PaymentMethod } from "@/models/Payment";
 
+// Calculate the fee effective for the selected billing month.
+function getFeeForMonth(
+  feeMonth: string,
+  monthlyFee: number,
+  monthlyFeeHistory?: {
+    amount: number;
+    effectiveFrom: string;
+    updatedAt?: Date;
+  }[]
+) {
+  const applicableHistory = (monthlyFeeHistory || [])
+    .filter(
+      (item) =>
+        item.effectiveFrom &&
+        /^\d{4}-(0[1-9]|1[0-2])$/.test(item.effectiveFrom) &&
+        item.effectiveFrom <= feeMonth
+    )
+    .sort((a, b) =>
+      a.effectiveFrom.localeCompare(b.effectiveFrom)
+    );
+
+  if (applicableHistory.length === 0) {
+    return monthlyFee;
+  }
+
+  return applicableHistory[applicableHistory.length - 1].amount;
+}
+
 // GET: View payment history
 export async function GET() {
   try {
@@ -99,12 +127,10 @@ export async function POST(request: NextRequest) {
       !body ||
       typeof body !== "object" ||
       typeof body.memberId !== "string" ||
-      body.memberId.trim() === "" ||
-      body.amount === undefined ||
-      body.amount === null ||
-      !body.paymentDate ||
-      !body.paymentMethod ||
-      typeof body.feeMonth !== "string"
+      !body.memberId.trim() ||
+      typeof body.feeMonth !== "string" ||
+      typeof body.paymentDate !== "string" ||
+      typeof body.paymentMethod !== "string"
     ) {
       return NextResponse.json(
         { message: "Please fill in all required fields." },
@@ -113,16 +139,7 @@ export async function POST(request: NextRequest) {
     }
 
     const memberId = body.memberId.trim();
-    const amount = Number(body.amount);
     const feeMonth = body.feeMonth.trim();
-
-    const paymentDate =
-      typeof body.paymentDate === "string"
-        ? new Date(body.paymentDate)
-        : new Date("");
-
-    const note =
-      typeof body.note === "string" ? body.note.trim() : "";
 
     // Validate member ID
     if (!/^[0-9a-fA-F]{24}$/.test(memberId)) {
@@ -132,15 +149,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate amount
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return NextResponse.json(
-        { message: "Please enter a valid payment amount." },
-        { status: 400 }
-      );
-    }
-
-    // Validate billing month (YYYY-MM)
+    // Validate billing month
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(feeMonth)) {
       return NextResponse.json(
         { message: "Please select a valid billing month." },
@@ -149,9 +158,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate payment date
-    if (Number.isNaN(paymentDate.getTime())) {
+    const paymentDate = new Date(body.paymentDate);
+
+    if (
+      Number.isNaN(paymentDate.getTime()) ||
+      paymentDate > new Date()
+    ) {
       return NextResponse.json(
-        { message: "Please enter a valid payment date." },
+        {
+          message:
+            "Please enter a valid payment date that is not in the future.",
+        },
         { status: 400 }
       );
     }
@@ -164,10 +181,7 @@ export async function POST(request: NextRequest) {
       "bank_transfer",
     ];
 
-    if (
-      typeof body.paymentMethod !== "string" ||
-      !validMethods.includes(body.paymentMethod as PaymentMethod)
-    ) {
+    if (!validMethods.includes(body.paymentMethod as PaymentMethod)) {
       return NextResponse.json(
         { message: "Invalid payment method." },
         { status: 400 }
@@ -176,25 +190,45 @@ export async function POST(request: NextRequest) {
 
     const paymentMethod = body.paymentMethod as PaymentMethod;
 
-    // Find active member
+    // Validate optional note
+    const note =
+      typeof body.note === "string" ? body.note.trim() : "";
+
+    if (note.length > 500) {
+      return NextResponse.json(
+        { message: "Payment note cannot exceed 500 characters." },
+        { status: 400 }
+      );
+    }
+
+    // Find an active, approved member.
+    // Older records without approvalStatus remain supported.
     const member = await Member.findOne({
       _id: memberId,
       isActive: true,
-    });
+      $or: [
+        { approvalStatus: "approved" },
+        { approvalStatus: { $exists: false } },
+      ],
+    }).select(
+      "membershipStartDate monthlyFee monthlyFeeHistory"
+    );
 
     if (!member) {
       return NextResponse.json(
-        { message: "Active member not found." },
+        { message: "Active approved member not found." },
         { status: 404 }
       );
     }
 
-    // Get member joining month
-    const joiningMonth = member.membershipStartDate
-      .toISOString()
-      .slice(0, 7);
+    // Get member joining month in Indian Standard Time.
+    const joiningMonth = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+    }).format(new Date(member.membershipStartDate));
 
-    // Prevent payment before joining month
+    // Prevent payment before joining month.
     if (feeMonth < joiningMonth) {
       return NextResponse.json(
         { message: "Cannot record payment before the joining month." },
@@ -202,17 +236,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Require exact full monthly fee
-    if (amount !== member.monthlyFee) {
+    // Calculate amount using the fee history stored in the database.
+    const amount = getFeeForMonth(
+      feeMonth,
+      Number(member.monthlyFee),
+      member.monthlyFeeHistory
+    );
+
+    if (!Number.isFinite(amount) || amount <= 0) {
       return NextResponse.json(
-        {
-          message: `Full monthly fee of ₹${member.monthlyFee} is required. Partial payments are not allowed.`,
-        },
+        { message: "Member has an invalid monthly fee." },
         { status: 400 }
       );
     }
 
-    // Check duplicate payment for this month
+    // Check for an existing payment.
     const existingPayment = await Payment.findOne({
       member: member._id,
       feeMonth,
@@ -227,7 +265,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create payment
+    // Create payment using the database-calculated historical amount.
     const payment = await Payment.create({
       member: member._id,
       amount,
@@ -254,6 +292,22 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    // Handle duplicate payment requests at database level.
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === 11000
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Payment for this member and month has already been recorded.",
+        },
+        { status: 409 }
+      );
+    }
+
     console.error("Payment registration error:", error);
 
     return NextResponse.json(

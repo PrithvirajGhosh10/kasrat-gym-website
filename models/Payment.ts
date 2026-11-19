@@ -58,7 +58,10 @@ const PaymentSchema = new Schema<IPayment>(
   { timestamps: true }
 );
 
-PaymentSchema.index({ member: 1, feeMonth: 1 });
+PaymentSchema.index(
+  { member: 1, feeMonth: 1 },
+  { unique: true }
+);
 
 const Payment: Model<IPayment> =
   mongoose.models.Payment ||

@@ -3,11 +3,19 @@
 
 import { useEffect, useState } from "react";
 
+interface MonthlyFeeHistory {
+  amount: number;
+  effectiveFrom: string;
+  updatedAt?: string;
+}
+
 interface Member {
   _id: string;
   name: string;
   phone: string;
   monthlyFee: number;
+  membershipStartDate: string;
+  monthlyFeeHistory?: MonthlyFeeHistory[];
 }
 
 export default function PaymentManagement() {
@@ -33,9 +41,30 @@ export default function PaymentManagement() {
     (member) => member._id === memberId
   );
 
-  const amount = selectedMember
-    ? selectedMember.monthlyFee
-    : 0;
+  // Find the fee applicable to the selected billing month.
+  function getFeeForMonth(member: Member, selectedMonth: string) {
+    const applicableHistory = (member.monthlyFeeHistory || [])
+      .filter(
+        (item) =>
+          item.effectiveFrom &&
+          /^\d{4}-(0[1-9]|1[0-2])$/.test(item.effectiveFrom) &&
+          item.effectiveFrom <= selectedMonth
+      )
+      .sort((a, b) =>
+        a.effectiveFrom.localeCompare(b.effectiveFrom)
+      );
+
+    if (applicableHistory.length > 0) {
+      return applicableHistory[applicableHistory.length - 1].amount;
+    }
+
+    return member.monthlyFee;
+  }
+
+  const amount =
+    selectedMember && feeMonth
+      ? getFeeForMonth(selectedMember, feeMonth)
+      : 0;
 
   useEffect(() => {
     async function fetchMembers() {
@@ -154,8 +183,10 @@ export default function PaymentManagement() {
             placeholder="Select a member first"
             className="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2"
           />
+
           <p className="mt-1 text-xs text-gray-500">
-            Full payment only. Partial payments are not allowed.
+            Automatically calculated using the selected month's fee history.
+            Full payment only; partial payments are not allowed.
           </p>
         </div>
 
@@ -171,8 +202,9 @@ export default function PaymentManagement() {
             required
             className="w-full rounded-lg border border-gray-300 px-4 py-2"
           />
+
           <p className="mt-1 text-xs text-gray-500">
-            Select the month this payment is for.
+            Select the month this payment is for. The fee updates automatically.
           </p>
         </div>
 

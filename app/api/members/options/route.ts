@@ -10,7 +10,10 @@ export async function GET() {
   try {
     const session = await getSession();
 
-    if (!session || (session.role !== "owner" && session.role !== "staff")) {
+    if (
+      !session ||
+      (session.role !== "owner" && session.role !== "staff")
+    ) {
       return NextResponse.json(
         { message: "Access denied. Please log in." },
         { status: 401 }
@@ -32,8 +35,16 @@ export async function GET() {
       );
     }
 
-    const members = await Member.find({ isActive: true })
-      .select("name phone monthlyFee")
+    const members = await Member.find({
+      isActive: true,
+      $or: [
+        { approvalStatus: "approved" },
+        { approvalStatus: { $exists: false } },
+      ],
+    })
+      .select(
+        "name phone monthlyFee monthlyFeeHistory membershipStartDate"
+      )
       .sort({ name: 1 })
       .lean();
 

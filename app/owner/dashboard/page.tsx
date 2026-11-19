@@ -1,117 +1,103 @@
 
-export const instant = false;
+import Link from "next/link";
 
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
-import { connectDB } from "@/lib/mongodb";
-import Admin from "@/models/Admin";
+const sections = [
+  {
+    title: "Add Staff Member",
+    description: "Create and manage gym staff accounts.",
+    href: "/owner/dashboard/staff",
+    icon: "👤",
+  },
+  {
+    title: "Add New Member",
+    description: "Register a new gym member.",
+    href: "/owner/dashboard/add-member",
+    icon: "➕",
+  },
+  {
+    title: "Pending Member Approvals",
+    description: "Review new member registration requests.",
+    href: "/owner/dashboard/approvals",
+    icon: "🔔",
+    notification: true,
+  },
+  {
+    title: "Gym Members",
+    description: "Search and manage all gym members.",
+    href: "/owner/dashboard/members",
+    icon: "👥",
+  },
+  {
+    title: "Fee Change Requests",
+    description: "Review and approve or reject monthly fee change requests.",
+    href: "/owner/dashboard/fee-requests",
+    icon: "💰",
+    notification: true,
+  },
+  {
+    title: "Record New Payment",
+    description: "Record monthly membership fee payments.",
+    href: "/owner/dashboard/record-payment",
+    icon: "💳",
+    notification: true,
+  },
+  {
+    title: "Payment History",
+    description: "View all previously recorded payments.",
+    href: "/owner/dashboard/payment-history",
+    icon: "📋",
+  },
+];
 
-import LogoutButton from "@/components/LogoutButton";
-import StaffManagement from "@/components/StaffManagement";
-import MemberManagement from "@/components/MemberManagement";
-import MemberList from "@/components/MemberList";
-import PaymentManagement from "@/components/PaymentManagement";
-import PaymentHistory from "@/components/PaymentHistory";
-
-export default async function OwnerDashboard() {
-  // 1. Check login session
-  const session = await getSession();
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  // 2. Only owners can access this page
-  if (session.role !== "owner") {
-    redirect("/login");
-  }
-
-  // 3. Verify owner account
-  await connectDB();
-
-  const admin = await Admin.findById(session.id).select(
-    "name email role isActive"
-  );
-
-  if (!admin || !admin.isActive || admin.role !== "owner") {
-    redirect("/login");
-  }
-
+export default function OwnerDashboard() {
   return (
-    <main className="min-h-screen bg-gray-100 px-4 py-6 sm:px-8">
-      <div className="mx-auto max-w-7xl">
+    <div>
+      <section className="mb-6 rounded-xl bg-white p-6 shadow-sm">
+        <p className="text-sm font-bold uppercase tracking-widest text-amber-700">
+          Management Dashboard
+        </p>
 
-        {/* Header */}
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white p-6 shadow-sm">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-              KASRAT FITNESS CLUB
-            </h1>
+        <h2 className="mt-2 text-2xl font-bold text-gray-900">
+          Welcome to the Owner Panel
+        </h2>
 
-            <p className="mt-2 text-gray-600">
-              Owner Dashboard
+        <p className="mt-2 text-gray-600">
+          Manage your gym staff, members, approvals, and payments
+          from their individual sections.
+        </p>
+      </section>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        {sections.map((section) => (
+          <Link
+            key={section.href}
+            href={section.href}
+            className="group relative rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-amber-300 hover:shadow-md"
+          >
+            {section.notification && (
+              <span className="absolute right-5 top-5 flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-amber-800">
+                !
+              </span>
+            )}
+
+            <div className="mb-4 text-3xl">
+              {section.icon}
+            </div>
+
+            <h3 className="pr-8 text-lg font-bold text-gray-900 transition group-hover:text-amber-800">
+              {section.title}
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-gray-500">
+              {section.description}
             </p>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Welcome, {admin.name}!
+            <p className="mt-5 text-sm font-bold text-amber-700">
+              Open section →
             </p>
-          </div>
-
-          <LogoutButton />
-        </header>
-
-        {/* Welcome Panel */}
-        <section className="mb-8 rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900">
-            Owner Panel
-          </h2>
-
-          <p className="mt-2 text-gray-600">
-            Manage your gym, staff members, gym members, and membership payments from one place.
-          </p>
-        </section>
-
-        {/* Staff Management */}
-        <section className="mb-8">
-          <StaffManagement />
-        </section>
-
-        {/* Member Registration */}
-        <section className="mb-8">
-          <MemberManagement />
-        </section>
-
-        {/* Complete Member List */}
-        <section className="mb-8">
-          <MemberList />
-        </section>
-
-        {/* Payment Management */}
-        <section className="mb-8">
-          <PaymentManagement />
-        </section>
-
-        {/* Payment History */}
-        <section className="mb-8">
-          <PaymentHistory />
-        </section>
-
-        {/* Footer */}
-        <footer className="border-t border-gray-200 py-6 text-center">
-          <p className="font-bold tracking-wider text-gray-900">
-            KASRAT FITNESS CLUB
-          </p>
-
-          <p className="mt-2 text-sm text-gray-500">
-            Stronger together. Train with purpose, grow with discipline.
-          </p>
-
-          <p className="mt-3 text-xs text-gray-400">
-            © {new Date().getFullYear()} KASRAT Fitness Club. All rights reserved.
-          </p>
-        </footer>
-
+          </Link>
+        ))}
       </div>
-    </main>
+    </div>
   );
 }

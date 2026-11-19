@@ -25,8 +25,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const member = await Member.findOne({ phone })
-      .select("+passwordHash");
+    const member = await Member.findOne({ phone }).select(
+      "+passwordHash"
+    );
 
     if (!member || !member.isActive) {
       return NextResponse.json(
@@ -44,6 +45,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { message: "Invalid phone number or password." },
         { status: 401 }
+      );
+    }
+
+    // Check owner approval status.
+    // Existing records without approvalStatus remain compatible.
+    if (
+      member.approvalStatus &&
+      member.approvalStatus !== "approved"
+    ) {
+      if (member.approvalStatus === "pending") {
+        return NextResponse.json(
+          {
+            message:
+              "Your registration is waiting for gym owner approval.",
+          },
+          { status: 403 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          message:
+            "Your registration has not been approved. Please contact the gym owner.",
+        },
+        { status: 403 }
       );
     }
 
